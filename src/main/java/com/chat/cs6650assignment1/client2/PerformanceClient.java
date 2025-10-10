@@ -1,7 +1,7 @@
-package com.chat.CS66650_Assignment1.client2;
+package com.chat.cs6650assignment1.client2;
 
-import com.chat.CS66650_Assignment1.messagegenerator.MessageGenerator;
-import com.chat.CS66650_Assignment1.model.ChatMessage;
+import com.chat.cs6650assignment1.messagegenerator.MessageGenerator;
+import com.chat.cs6650assignment1.model.ChatMessage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class PerformanceClient {
 
-    private static final String SERVER_URL = "ws://52.38.202.150:8080/chat";
+    private static final String SERVER_URL = "ws://localhost:8080/chat";
     private static final String CSV_FILE_PATH_FORMAT = "results/performance_metrics_%d.csv";
 
     public static final int MAIN_PHASE_THREADS = 64;

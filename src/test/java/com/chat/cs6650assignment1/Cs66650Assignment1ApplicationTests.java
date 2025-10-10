@@ -1,4 +1,4 @@
-package com.chat.CS66650_Assignment1;
+package com.chat.cs6650assignment1;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

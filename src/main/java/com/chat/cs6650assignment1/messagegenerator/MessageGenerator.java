@@ -1,6 +1,6 @@
-package com.chat.CS66650_Assignment1.messagegenerator;
+package com.chat.cs6650assignment1.messagegenerator;
 
-import com.chat.CS66650_Assignment1.model.ChatMessage;
+import com.chat.cs6650assignment1.model.ChatMessage;
 
 import java.time.Instant;
 import java.util.List;

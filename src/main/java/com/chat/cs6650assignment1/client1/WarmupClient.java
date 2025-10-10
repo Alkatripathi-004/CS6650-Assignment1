@@ -1,6 +1,6 @@
-package com.chat.CS66650_Assignment1.client1;
+package com.chat.cs6650assignment1.client1;
 
-import com.chat.CS66650_Assignment1.model.ChatMessage;
+import com.chat.cs6650assignment1.model.ChatMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -30,7 +30,7 @@ public class WarmupClient {
             executor.submit(new ClientTask(i, latch));
         }
 
-        latch.await(); // Wait for all threads to finish
+        latch.await();
         long endTime = System.currentTimeMillis();
         executor.shutdown();
 
@@ -90,7 +90,6 @@ public class WarmupClient {
                     client.send(objectMapper.writeValueAsString(msg));
                 }
 
-                // Wait for acks, but with a timeout
                 if (!messageLatch.await(30, TimeUnit.SECONDS)) {
                     System.err.println("Client " + clientId + " timed out waiting for all ACKs.");
                     failedMessages.addAndGet((int) messageLatch.getCount());

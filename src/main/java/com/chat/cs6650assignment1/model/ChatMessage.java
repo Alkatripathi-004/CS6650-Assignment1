@@ -1,4 +1,4 @@
-package com.chat.CS66650_Assignment1.model;
+package com.chat.cs6650assignment1.model;
 
 import java.time.Instant;
 import java.util.UUID;

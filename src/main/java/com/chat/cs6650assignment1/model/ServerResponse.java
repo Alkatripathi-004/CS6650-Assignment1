@@ -1,4 +1,4 @@
-package com.chat.CS66650_Assignment1.model;
+package com.chat.cs6650assignment1.model;
 
 public class ServerResponse {
     private String status;

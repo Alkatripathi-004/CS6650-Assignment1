@@ -1,6 +1,6 @@
-package com.chat.CS66650_Assignment1.config;
+package com.chat.cs6650assignment1.config;
 
-import com.chat.CS66650_Assignment1.server.ChatWebSocketHandler;
+import com.chat.cs6650assignment1.server.ChatWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;

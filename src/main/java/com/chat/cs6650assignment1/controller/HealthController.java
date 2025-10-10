@@ -1,4 +1,4 @@
-package com.chat.CS66650_Assignment1.controller;
+package com.chat.cs6650assignment1.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

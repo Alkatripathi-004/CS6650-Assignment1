@@ -1,4 +1,4 @@
-package com.chat.CS66650_Assignment1.client2;
+package com.chat.cs6650assignment1.client2;
 
 public class PerformanceEntry {
     private final String startTimestamp;

@@ -1,7 +1,7 @@
-package com.chat.CS66650_Assignment1.server;
+package com.chat.cs6650assignment1.server;
 
-import com.chat.CS66650_Assignment1.model.ChatMessage;
-import com.chat.CS66650_Assignment1.model.ServerResponse;
+import com.chat.cs6650assignment1.model.ChatMessage;
+import com.chat.cs6650assignment1.model.ServerResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;

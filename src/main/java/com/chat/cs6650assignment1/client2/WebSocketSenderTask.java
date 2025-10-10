@@ -1,7 +1,7 @@
-package com.chat.CS66650_Assignment1.client2;
+package com.chat.cs6650assignment1.client2;
 
 
-import com.chat.CS66650_Assignment1.model.ChatMessage;
+import com.chat.cs6650assignment1.model.ChatMessage;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.client.WebSocketClient;
