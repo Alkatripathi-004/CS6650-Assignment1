@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 public class PerformanceClient {
 
     private static final String SERVER_URL = "ws://chat-app-alb-819484957.us-east-1.elb.amazonaws.com/chat";
-    //chat-app-alb-819484957.us-east-1.elb.amazonaws.com
     private static int NUM_THREADS = 256;
     private static double RATE_LIMIT_PER_SECOND = 4000;
     private static int TOTAL_MESSAGES = 500000;
@@ -68,7 +67,6 @@ public class PerformanceClient {
         int totalInitialConnections = senderTasks.stream().mapToInt(WebSocketSenderTask::getTotalConnections).sum();
         int totalReconnections = senderTasks.stream().mapToInt(WebSocketSenderTask::getTotalReconnections).sum();
 
-        // CHANGED: We only collect one list of latencies now.
         List<Long> allLatencies = senderTasks.stream()
                 .flatMap(task -> task.getLatencies().stream())
                 .collect(Collectors.toList());
@@ -86,7 +84,6 @@ public class PerformanceClient {
         System.out.printf("Overall Throughput: %.2f messages/second%n", throughput);
 
         reporter.writeToCsv();
-        // CHANGED: Simplified reporting output.
         System.out.println("\n--- Broadcast Latency Statistics ---");
         reporter.printStatistics(allLatencies);
     }

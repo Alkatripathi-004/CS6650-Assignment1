@@ -27,14 +27,12 @@ public class RabbitMQConsumerService implements ChannelAwareMessageListener {
     private final ObjectMapper objectMapper;
     private final Set<String> processedMessageIds = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
-    // INJECT THE NEW PUBLISHER SERVICE
     private final BroadcastPublisherService broadcastPublisher;
 
     public RabbitMQConsumerService(ObjectMapper objectMapper, MeterRegistry meterRegistry, BroadcastPublisherService broadcastPublisher) {
         this.objectMapper = objectMapper;
-        this.broadcastPublisher = broadcastPublisher; // Store the publisher
+        this.broadcastPublisher = broadcastPublisher;
 
-        // Metrics initialization remains the same
         this.messagesProcessedCounter = Counter.builder("chat.messages.processed")
                 .description("Total number of messages processed by the 'work' consumer")
                 .register(meterRegistry);
@@ -53,7 +51,6 @@ public class RabbitMQConsumerService implements ChannelAwareMessageListener {
         logger.info("Thread [{}] won race and consumed message {}. Re-publishing for broadcast.",
                 Thread.currentThread().getName(), payload.getMessageId());
 
-        // Idempotency check for the 'work' queue processing
         if (!processedMessageIds.add(payload.getMessageId())) {
             logger.warn("Duplicate message received in work queue, ignoring: {}", payload.getMessageId());
             duplicateMessagesCounter.increment();

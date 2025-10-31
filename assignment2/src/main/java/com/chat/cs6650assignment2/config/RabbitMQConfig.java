@@ -16,14 +16,13 @@ import java.util.List;
 @EnableRabbit
 public class RabbitMQConfig {
     public static final String TOPIC_EXCHANGE_NAME = "chat.exchange";
-    public static final String FANOUT_EXCHANGE_NAME = "chat.broadcast.exchange";// As per assignment
+    public static final String FANOUT_EXCHANGE_NAME = "chat.broadcast.exchange";
     public static final String QUEUE_NAME_PREFIX = "room.";
     public static final String ROUTING_KEY_PREFIX = "room.";
     private static final int NUMBER_OF_ROOMS = 20;
 
-    // --- Configuration for Queue TTL and Limits as per assignment ---
-    private static final int MESSAGE_TTL_MS = 360000;      // 1 hour
-    private static final int MAX_QUEUE_LENGTH = 10000;      // Max 10,000 messages per room
+    private static final int MESSAGE_TTL_MS = 360000;
+    private static final int MAX_QUEUE_LENGTH = 10000;
 
     /**
      * The central topic exchange that receives all messages.
@@ -42,7 +41,6 @@ public class RabbitMQConfig {
     public Declarables amqpDeclarables(TopicExchange topicExchange) {
         List<Declarable> declarables = new ArrayList<>();
 
-        // 1. Declare the 20 durable room queues and their bindings to the TOPIC exchange
         for (int i = 1; i <= NUMBER_OF_ROOMS; i++) {
             String queueName = QUEUE_NAME_PREFIX + i;
             String routingKey = ROUTING_KEY_PREFIX + i;
@@ -52,7 +50,6 @@ public class RabbitMQConfig {
                     .build();
             declarables.add(queue);
 
-            // Note: We use the 'topicExchange' passed in as an argument
             Binding binding = BindingBuilder.bind(queue).to(topicExchange).with(routingKey);
             declarables.add(binding);
         }

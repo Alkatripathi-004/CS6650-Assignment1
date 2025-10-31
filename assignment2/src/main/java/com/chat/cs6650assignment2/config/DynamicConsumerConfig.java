@@ -8,7 +8,6 @@ import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -50,43 +49,31 @@ public class DynamicConsumerConfig implements ApplicationRunner {
         this.serverBroadcastQueue = serverBroadcastQueue;
     }
 
-    /**
-     * This method will be automatically called by Spring Boot upon application startup.
-     * @param args The application arguments (we don't use them here).
-     * @throws Exception
-     */
     @Override
     public void run(ApplicationArguments args) throws Exception {
         System.out.println("--- Starting Dynamic RabbitMQ Consumer Configuration ---");
 
         System.out.println("Manually declaring fanout exchange and binding...");
 
-        // Ensure the exchange exists
         rabbitAdmin.declareExchange(this.fanoutExchange);
 
-        // The anonymous queue is already declared as a bean, so we just need its name.
         String queueName = this.serverBroadcastQueue.getName();
 
-        // Create the binding object
         var binding = BindingBuilder
                 .bind(new org.springframework.amqp.core.Queue(queueName))
                 .to(this.fanoutExchange);
 
-        // Declare the binding on the broker
         rabbitAdmin.declareBinding(binding);
 
         System.out.println("Binding of queue " + queueName + " to exchange " + fanoutExchange.getName() + " is complete.");
 
-        // Step 1: Distribute rooms fairly across the number of threads
         Map<Integer, List<String>> threadQueueMap = new HashMap<>();
         for (int i = 1; i <= NUMBER_OF_ROOMS; i++) {
-            // Using modulo to distribute rooms to threads
             int threadIndex = (i - 1) % threadCount;
             threadQueueMap.computeIfAbsent(threadIndex, k -> new ArrayList<>())
                     .add(RabbitMQConfig.QUEUE_NAME_PREFIX + i);
         }
 
-        // Step 2: Create a listener container for each thread
         for (int i = 0; i < threadCount; i++) {
             List<String> queuesForThisThread = threadQueueMap.get(i);
             if (queuesForThisThread == null || queuesForThisThread.isEmpty()) {
@@ -99,16 +86,8 @@ public class DynamicConsumerConfig implements ApplicationRunner {
             container.setConnectionFactory(connectionFactory);
             container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
             container.setQueueNames(queuesForThisThread.toArray(new String[0]));
-
-            // ================== SIMPLIFIED LISTENER SETUP ==================
-            // Because RabbitMQConsumerService implements ChannelAwareMessageListener,
-            // we can set it as the listener directly. The container knows
-            // exactly how to call the onMessage(Message, Channel) method.
-            // No adapter is needed.
             container.setPrefetchCount(200);
             container.setMessageListener(consumerService);
-            // =============================================================
-
             container.setBeanName("RoomConsumer-" + i);
             container.start();
         }

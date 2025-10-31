@@ -33,7 +33,6 @@ public class WebSocketSenderTask implements Runnable {
 
     private final AtomicInteger successfulMessages;
     private final AtomicInteger failedMessages;
-    // CHANGED: Only one latency list is needed.
     private final List<Long> latencies;
     private final AtomicInteger totalConnections;
     private final AtomicInteger totalReconnections;
@@ -143,13 +142,10 @@ public class WebSocketSenderTask implements Runnable {
                 lastMessageReceivedTime.set(System.currentTimeMillis());
                 try {
                     JsonNode responseNode = objectMapper.readTree(message);
-                    // CHANGED: We ONLY care about the broadcast message now.
                     if (responseNode.has("clientMessageId")) {
                         handleBroadcast(responseNode);
                     }
-                    // The ACK (with "originalMessageId") is ignored.
                 } catch (Exception e) {
-                    // This error is ignored as it might be an unparsable ACK.
                 }
             }
 
@@ -189,12 +185,10 @@ public class WebSocketSenderTask implements Runnable {
 
     public int getSuccessfulCount() { return successfulMessages.get(); }
     public int getFailedCount() { return failedMessages.get(); }
-    // CHANGED: Renamed getter for clarity.
     public List<Long> getLatencies() { return latencies; }
     public int getTotalConnections() { return totalConnections.get(); }
     public int getTotalReconnections() { return totalReconnections.get(); }
 
-    // CHANGED: Greatly simplified PendingRequest class.
     class PendingRequest {
         final ChatMessage message;
         final long startTime;

@@ -1,8 +1,5 @@
 package com.chat.cs6650assignment2.model;
 
-
-import com.chat.cs6650assignment2.model.ChatMessage;
-
 public class QueueMessage {
     private String messageId;
     private String roomId;
@@ -11,7 +8,7 @@ public class QueueMessage {
     private String message;
     private String timestamp;
     private ChatMessage.MessageType messageType;
-    private String serverId; // To identify which server instance sent it
+    private String serverId;
     private String clientIp;
     private String clientMessageId;
 
