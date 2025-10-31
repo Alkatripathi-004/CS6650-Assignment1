@@ -124,3 +124,100 @@ Follow these steps to deploy the server to a production-like environment.
     nohup java -jar chat-server-0.0.1-SNAPSHOT.jar > server.log 2>&1 &
     ```
 *   Your server is now live! You can check its logs with `tail -f server.log`.
+
+
+# Assignment 2
+
+# CS6650 - Assignment 2: Distributed Chat Application
+
+This project implements a scalable, distributed real-time chat application using Java, Spring Boot, WebSockets, and RabbitMQ. 
+It builds upon the foundational concepts of Assignment 1 by introducing a robust message queueing system for message distribution, 
+ensuring reliability and scalability across multiple server instances.
+
+## System Architecture
+
+The application is designed as a distributed system, capable of running multiple instances behind a load balancer. 
+It uses a sophisticated two-phase messaging pattern to ensure both efficient processing and reliable broadcasting.
+
+### Core Components:
+1.  **WebSocket Server Instances:** Lightweight gateways responsible for managing persistent WebSocket connections from clients.
+2.  **RabbitMQ:** The central message broker, handling the flow of messages between system components.
+3.  **Client Application:** A multi-threaded performance client used for load testing the system.
+
+### Message Flow (Fan-in, Fan-out)
+
+The system employs a two-exchange model to correctly handle message processing and broadcasting in a distributed environment:
+
+1.  **Phase 1: Fan-in (Work Distribution)**
+    *   A client sends a message to its connected WebSocket server instance.
+    *   The server publishes the message to a **Topic Exchange** (`chat.exchange`) with a routing key based on the room ID (e.g., `room.5`).
+    *   The message is routed to one of 20 durable, shared **"work" queues** (`room.1` through `room.20`).
+    *   One of the running consumer threads from any server instance consumes the message (Competing Consumer pattern), guaranteeing that each message is processed **exactly once**.
+
+2.  **Phase 2: Fan-out (Broadcast)**
+    *   After processing, the winning consumer re-publishes the message to a **Fanout Exchange** (`chat.broadcast.exchange`).
+    *   This exchange broadcasts a copy of the message to **every running server instance** via their private, anonymous queues.
+    *   Each server instance receives the broadcast and pushes the message to any locally connected clients in the target room.
+
+This architecture successfully decouples message processing from message delivery, allowing for independent scaling and enhanced resilience.
+
+## Features Implemented
+
+### Server-Side
+- **Distributed WebSocket Handling:** Manages WebSocket connections across multiple server instances.
+- **RabbitMQ Integration:** Utilizes a Topic Exchange for work distribution and a Fanout Exchange for broadcasting.
+- **Durable Queues:** Adheres to the requirement of one durable queue per room (`room.1` - `room.20`) with configured TTL and max-length limits to protect the broker.
+- **Multi-threaded, Partitioned Consumer:** A configurable pool of consumer threads where each thread is responsible for a specific subset of rooms. This design choice **guarantees message ordering within each room** at the consumer level.
+- **At-Least-Once Delivery:** Employs manual acknowledgements (`ack`/`nack`) to ensure messages are not lost if a consumer fails.
+- **Idempotent Consumer:** Tracks processed message IDs to safely handle duplicate message deliveries.
+- **Resilience Patterns:**
+    - **Circuit Breaker:** A circuit breaker on the message producer prevents the application from being overwhelmed by a disconnected message broker.
+    - **Flow Control:** Uses RabbitMQ's prefetch mechanism to prevent consumers from being overloaded.
+- **Health Metrics:** Exposes key application metrics (e.g., messages processed, duplicates, failures) via Spring Boot Actuator endpoints (`/actuator/metrics`).
+- **Latency Monitoring:** Uses Micrometer's `@Timed` annotation to measure the processing latency of the consumer.
+
+### Client-Side
+- **Multi-threaded Performance Client:** A configurable load testing client capable of simulating a high number of concurrent users.
+- **Rate Limiting:** Uses a shared rate limiter to generate a stable, predictable load on the server.
+- **End-to-End Latency Measurement:** Accurately measures the full round-trip time of a message, from client send to broadcast receive.
+- **Statistical Reporting:** Generates and prints key performance statistics (mean, median, p95, p99, throughput) upon test completion.
+
+## How to Build and Run
+
+### Prerequisites
+- Java 21 (or your configured version)
+- Apache Maven 3.6+
+- A running RabbitMQ instance
+
+### Build
+The project is structured as a multi-module Maven project. To build, navigate to the parent directory and run:
+
+```bash
+mvn clean install
+```
+
+This will create two self-contained, executable JAR files in the `target` directory of each module (`assignment1/target/` and `assignment2/target/`). We will use the `assignment2` JAR.
+
+### Run
+The application is designed to run in multiple instances with identical code.
+
+1.  **Configure RabbitMQ Connection:**
+    Ensure your `src/main/resources/application.properties` file is configured with the correct host, port, and credentials for your RabbitMQ server.
+
+2.  **Run the Server Instances:**
+    Upload the `assignment2-x.x.x-SNAPSHOT.jar` file to your EC2 instances. Launch the application from the command line.
+
+    ```bash
+    # Run on all instances
+    # The application will start and all instances will compete to consume messages
+    # and will also listen for broadcasts.
+    nohup java -jar assignment2-x.x.x-SNAPSHOT.jar > app.log 2>&1 &
+    ```
+
+3.  **Run the Performance Client:**
+    The performance client is included within the project. To run it from your IDE, configure the `PerformanceClient` class with your server's URL (e.g., your ALB endpoint) and desired test parameters, then execute the `main` method.
+
+## Architectural Trade-offs and Discussion
+
+- **Competing Consumer vs. Broadcast:** A key challenge was adhering to the "one queue per room" requirement while ensuring all clients received messages. This was solved by implementing a two-phase "Fan-in, Fan-out" pattern. While this introduces a second hop through RabbitMQ, it correctly decouples the "single writer" processing logic (e.g., saving to a database) from the broadcast mechanism.
+- **Message Ordering:** The partitioned multi-threaded consumer guarantees message ordering *at the consumer level* for each room. However, true end-to-end ordering is not guaranteed due to network race conditions.
