@@ -6,7 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class Cs66650Assignment1ApplicationTests {
 
-	@Test
+
+    @Test
 	void contextLoads() {
 	}
 
