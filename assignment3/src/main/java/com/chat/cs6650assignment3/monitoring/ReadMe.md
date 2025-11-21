@@ -128,3 +128,26 @@ Response:
 [Query 3] Fetching History for User ID '1'...
 >> Messages found for User 1: 5
 ```
+
+### 2. How to Collect DDB Metrics
+
+
+#### Step A: Open the Dashboard
+1.  Log in to AWS Console.
+2.  Go to **DynamoDB**.
+3.  Click **Tables** on the left sidebar -> Select `ChatMessages`.
+4.  Click the **Monitor** tab in the middle of the screen.
+5.  Click **"View in CloudWatch"**
+
+#### Step B: Capture the Specific Graphs
+
+**1. For "Queries Per Second" -> Capture `Consumed Write Capacity`**
+*   **Look for Graph:** **ConsumedWriteCapacityUnits** (Sum).
+*   **Interpretation:** Hover over the peak. If it says `1,500`, you are doing ~1,500 writes/second (assuming items < 1KB).
+
+**2. For "Lock Wait Time" -> Capture `Throttled Requests`**
+*   **Look for Graph:** **ThrottledRequests** (or **WriteThrottleEvents**).
+
+**3. For "Disk I/O" -> Capture `Latency`**
+*   **Look for Graph:** **SuccessfulRequestLatency** (Average) -> Select "PutItem".
+*   **Interpretation:** This measures the physical time taken to commit data to disk.
