@@ -1,0 +1,56 @@
+package com.chat.cs6650assignment3.controller;
+
+import com.chat.cs6650assignment3.database.ChatQueryService;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+@RestController
+@RequestMapping("/api/analytics")
+public class MetricsController {
+
+    private final ChatQueryService queryService;
+
+    public MetricsController(ChatQueryService queryService) {
+        this.queryService = queryService;
+    }
+
+    @GetMapping("/room/{roomId}")
+    public List<Map<String, String>> getRoomHistory(
+            @PathVariable String roomId,
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end) {
+
+        String endTime = (end != null) ? end : Instant.now().toString();
+        String startTime = (start != null) ? start : Instant.now().minus(1, ChronoUnit.HOURS).toString();
+
+        return queryService.getRoomHistory(roomId, startTime, endTime);
+    }
+
+    @GetMapping("/user/{userId}")
+    public Map<String, Object> getUserDetails(
+            @PathVariable String userId,
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end) {
+
+        return Map.of(
+                "history", queryService.getUserHistory(userId, start, end),
+                "participated_rooms", queryService.getRoomsForUser(userId)
+        );
+    }
+
+    @GetMapping("/stats")
+    public CompletableFuture<Map<String, Object>> getSystemStats(
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end) {
+
+        String endTime = (end != null) ? end : Instant.now().toString();
+        String startTime = (start != null) ? start : Instant.now().minus(1, ChronoUnit.HOURS).toString();
+
+        return queryService.getAnalyticsInWindow(startTime, endTime);
+    }
+}
